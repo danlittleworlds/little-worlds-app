@@ -1,0 +1,278 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>little worlds | parent app</title>
+<style>
+:root{--green:#526e57;--sage:#e5eddf;--cream:#fcf8f0;--pink:#f4dfdc;--blue:#e1edf2;--yellow:#f7ebcb;--ink:#3e5141}
+*{box-sizing:border-box}
+body{margin:0;background:#e5ebe2;color:var(--ink);font-family:Arial,sans-serif}
+.app{max-width:490px;margin:auto;min-height:100vh;background:var(--cream);box-shadow:0 0 24px #0001}
+header{background:#e6edde;padding:17px;text-align:center}
+.logo{font-family:Georgia,serif;font-size:30px;letter-spacing:-1px;color:#45624b}
+.tagline{font-size:10px;letter-spacing:1px}
+.rainbow{height:25px;font-size:27px;margin-bottom:8px}
+main{padding:20px 17px 100px}
+h1,h2,h3{font-family:Georgia,serif;font-weight:normal}
+h1{font-size:30px;margin:10px 0}
+h2{font-size:23px}
+h3{font-size:19px;margin:7px 0}
+p{font-size:14px;line-height:1.6}
+small,.muted{color:#728273;font-size:12px}
+.card{background:white;border-radius:19px;padding:18px;margin:13px 0;overflow:hidden}
+.sage{background:var(--sage)}
+.pink{background:var(--pink)}
+.blue{background:var(--blue)}
+.yellow{background:var(--yellow)}
+.hero{border-radius:19px;overflow:hidden;background:#dbe5d7}
+.hero img,.photo{width:100%;height:190px;object-fit:cover;display:block}
+.hero .body{padding:18px}
+.eyfs{font-size:11px;color:#526e57;margin-top:8px}
+.pill{display:inline-block;background:#e5eddf;border-radius:20px;padding:7px 10px;font-size:11px;margin:3px}
+button{font:inherit;cursor:pointer;border:0;background:var(--green);color:white;padding:12px 16px;border-radius:12px}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #b08a54;outline-offset:2px}
+.secondary{background:white;color:var(--green);border:1px solid #b7c7b4}
+.full{width:100%;margin-top:10px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tile{background:#e6eddf;border-radius:15px;padding:14px;cursor:pointer;min-height:105px;text-align:left}
+.tile:nth-child(2n){background:#f5e2df}
+.tile:nth-child(3n){background:#e1edf2}
+.tile:nth-child(4n){background:#f7ebcb}
+.tile img{width:100%;height:95px;object-fit:cover;border-radius:10px;margin-bottom:8px}
+.tile strong{font-size:13px}
+.tabs{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:490px;display:flex;background:white;border-top:1px solid #e1e5dd;z-index:5}
+.tabs button{flex:1;background:white;color:#718171;border-radius:0;padding:13px 2px;font-size:10px}
+.tabs button.active{background:#e4eddf;color:#38533e;font-weight:bold}
+.tabs span{display:block;font-size:19px;margin-bottom:4px}
+label{display:block;font-size:13px;margin:12px 0 5px}
+select,input,textarea{width:100%;border:1px solid #cbd7c9;border-radius:10px;padding:12px;font:inherit;background:white;color:#3e5141}
+textarea{min-height:85px}
+.week{width:100%;text-align:left;background:white;color:var(--ink);margin:5px 0;border:1px solid #dce5d7}
+.week.active{background:var(--sage)}
+.preview{max-width:100%;max-height:240px;object-fit:contain;border-radius:12px;margin-top:10px}
+.notice{font-size:11px;background:#f4ecd9;padding:12px;border-radius:10px}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+<div class="rainbow">🌈</div>
+<div class="logo">little worlds</div>
+<div class="tagline">where curiosity becomes confidence</div>
+</header>
+<main id="screen"></main>
+<nav class="tabs" id="tabs"></nav>
+</div>
+<script>
+const photos={
+home:"https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=900",
+play:"https://images.unsplash.com/photo-1566004100631-35d015d6a491?w=900",
+books:"https://images.unsplash.com/photo-1512820790803-83ca734da794?w=900",
+nature:"https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=900"
+};
+const weeks=[
+["Who cares for animals?","Caring and kindness","Role play in Vet World. Explore animal care and talk about what pets need.","Create a teddy animal hospital and take turns being the vet.","Communication and Language · Understanding the World · Personal, Social and Emotional Development","What do you think this animal needs?"],
+["How can we help each other?","Helping hands","Explore helping roles in the Hospital and Supermarket.","Make a helping hands chart with little acts of kindness.","Personal, Social and Emotional Development · Communication and Language","How did helping someone make you feel?"],
+["What helps things grow?","Growing together","Investigate seeds, plants and changing seasons.","Plant a seed and notice what changes.","Understanding the World · Mathematics · Communication and Language","What do you think our seed needs?"],
+["How do we look after our community?","Our little community","Explore community roles through the Garage and Post Office.","Make and deliver a kind message to someone.","Understanding the World · Literacy · Personal, Social and Emotional Development","Who helps people where we live?"],
+["How can we care for our planet?","Little planet protectors","Sort, reuse and explore materials through imaginative play.","Create something new from clean recycled materials.","Understanding the World · Expressive Arts and Design · Mathematics","What could we use this for again?"],
+["What have we discovered together?","Our favourite discoveries","Revisit favourite worlds and tell stories about the half term.","Choose a favourite photograph and talk about the memory.","Communication and Language · Expressive Arts and Design · Personal, Social and Emotional Development","What would you love to explore next?"]
+];
+const worlds=[
+["Supermarket","Shopping, counting and cooperation"],
+["Hospital","Caring, empathy and communication"],
+["Garage","Problem solving and exploring how things work"],
+["Theatre","Stories, expression and confidence"],
+["Vet World","Animals, kindness and imaginative care"],
+["Garden World","Nature, growth and discovery"],
+["Construction World","Design, building and teamwork"],
+["Post Office","Messages, communication and community"]
+];
+let page="Home",week=0,chosenWorld="Vet World",saved=[],booking=null;
+const tabs=["Home","Discover","Book","Membership","My World"];
+const icons=["⌂","✿","▦","♡","☺"];
+const el=document.getElementById("screen");
+function go(p){page=p;render();window.scrollTo(0,0)}
+function render(){
+document.getElementById("tabs").innerHTML=tabs.map((t,i)=>
+`<button class="${page===t?'active':''}" onclick="go('${t}')"><span>${icons[i]}</span>${t}</button>`).join("");
+if(page==="Home")home();
+if(page==="Discover")discover();
+if(page==="Book")book();
+if(page==="Membership")membership();
+if(page==="My World")myWorld();
+}
+function home(){
+el.innerHTML=`
+<h1>Hello, Sophie</h1><p class="muted">A world of little discoveries awaits Ella.</p>
+<div class="hero">
+<img src="${photos.home}" alt="Child enjoying play">
+<div class="body"><small>THIS HALF TERM</small>
+<h2>How do we care for the world around us?</h2>
+<p>Six weeks of questions, stories, play and discovery.</p>
+<button onclick="go('Discover')">Explore this half term</button></div></div>
+<div class="grid" style="margin-top:15px">
+<button class="tile" onclick="go('Book')"><strong>Book a visit</strong><p>Plan your next adventure</p></button>
+<button class="tile" onclick="go('Discover')"><strong>Discover</strong><p>Our weekly curriculum</p></button>
+<button class="tile" onclick="go('My World')"><strong>Little Moments</strong><p>Capture a memory</p></button>
+<button class="tile" onclick="go('Membership')"><strong>Membership</strong><p>Explore your benefits</p></button>
+</div>
+<div class="card sage"><small>THIS WEEK'S QUESTION</small>
+<h2>${weeks[week][0]}</h2>
+<p>${weeks[week][1]}</p>
+<button onclick="go('Discover')">Discover this week</button></div>`;
+}
+function discover(){
+let w=weeks[week];
+el.innerHTML=`
+<h1>Discover</h1>
+<p>One big question. Six weeks of little discoveries.</p>
+<div class="hero"><img src="${photos.nature}" alt="Nature and discovery">
+<div class="body"><small>THIS HALF TERM</small>
+<h2>How do we care for the world around us?</h2>
+<p>Every week brings a new question, experiences at the centre and ideas to explore together at home.</p></div></div>
+<h2>Our weekly questions</h2>
+${weeks.map((x,i)=>`<button class="week ${i===week?'active':''}" onclick="selectWeek(${i})">Week ${i+1} · ${x[0]}</button>`).join("")}
+<div class="card sage">
+<small>WEEK ${week+1} · ${w[1].toUpperCase()}</small>
+<h2>${w[0]}</h2>
+<h3>At Little Worlds</h3><p>${w[2]}</p>
+<h3>Continue at home</h3><p>${w[3]}</p>
+<h3>A little question to ask</h3><p><i>"${w[5]}"</i></p>
+<h3>How this connects to EYFS</h3><p>${w[4]}</p>
+<p class="muted">These are opportunities for learning through play, not measures of performance.</p>
+<button onclick="go('My World')">Capture a Little Moment</button>
+</div>
+<h2>Our eight worlds</h2>
+<div class="grid">${worlds.map(x=>`<button class="tile" onclick="showWorld('${x[0]}')"><strong>${x[0]}</strong><p>${x[1]}</p></button>`).join("")}</div>
+<div id="worldInfo" class="card pink"><h3>${chosenWorld}</h3><p>Explore this world through imaginative play and discovery.</p></div>
+<div class="card blue">
+<h3>Our EYFS approach</h3>
+<p>The Early Years Foundation Stage supports seven areas of learning: Communication and Language; Personal, Social and Emotional Development; Physical Development; Literacy; Mathematics; Understanding the World; and Expressive Arts and Design.</p>
+<p>Little Worlds connects these areas naturally through purposeful play, stories and experiences.</p></div>
+<div class="card yellow"><h3>Featured stories</h3>
+<p>Each half term includes picture books and story suggestions linked to the big question. The final reading list will be added from the approved curriculum.</p></div>`;
+}
+function selectWeek(i){week=i;discover()}
+function showWorld(n){
+chosenWorld=n;
+let x=worlds.find(w=>w[0]===n);
+document.getElementById("worldInfo").innerHTML=`<h3>${x[0]}</h3><p>${x[1]}.</p><p>Children are free to explore, imagine and create their own stories.</p>`;
+}
+function book(){
+el.innerHTML=`
+<h1>Book a visit</h1><p>Plan another little adventure.</p>
+<div class="card sage"><h2>Member play session</h2>
+<p>Discover our immersive worlds, explore the current half term theme and enjoy time together.</p></div>
+<label>Choose a sample date</label>
+<select id="date"><option>Saturday 14 November</option><option>Sunday 15 November</option><option>Monday 16 November</option></select>
+<label>Choose a time</label>
+<select id="time"><option>09:00</option><option>10:30</option><option>13:00</option><option>15:00</option></select>
+<button class="full" onclick="makeBooking()">Confirm sample booking</button>
+<div id="bookingResult">${booking?`<div class="card sage"><h3>Sample booking saved</h3><p>${booking}</p></div>`:""}</div>
+<p class="notice">This is a demonstration. Dates, availability and booking entitlements are illustrative. No real reservation or payment takes place.</p>`;
+}
+function makeBooking(){
+booking=document.getElementById("date").value+" at "+document.getElementById("time").value;
+document.getElementById("bookingResult").innerHTML=`<div class="card sage"><h3>You're all set!</h3><p>${booking}</p><p>Sample confirmation only.</p></div>`;
+}
+function membership(){
+el.innerHTML=`
+<h1>Your membership</h1>
+<div class="hero"><img src="${photos.books}" alt="Books and learning">
+<div class="body"><h2>More than a visit</h2>
+<p>Learning, imagination and inspiration that continue throughout the half term.</p></div></div>
+<div class="card sage"><h3>Your Little Worlds experience</h3>
+<p>Explore member sessions and plan your visits.</p>
+<p>Discover a connected half term curriculum.</p>
+<p>Enjoy weekly activities at the centre and at home.</p>
+<p>Capture memories in your private Little Moments journal.</p>
+<p>Explore personalised suggestions inspired by your child's interests.</p>
+</div>
+<div class="card pink"><h3>Membership and rewards</h3><p>Explore special experiences, member benefits and Little Worlds merchandise.</p></div>
+<button class="full" onclick="go('Book')">Explore sessions</button>
+<p class="notice">Illustrative benefits. Final membership prices, inclusions and rewards are to be confirmed.</p>`;
+}
+function myWorld(){
+el.innerHTML=`
+<h1>Ella's little world</h1>
+<div class="card sage"><h2>Our Little Moments</h2>
+<p>A private place to celebrate the things Ella loves. No scores, milestones or comparisons.</p></div>
+<h2>Capture a memory</h2>
+<div class="card">
+<label>Add a photograph</label>
+<input type="file" id="photo" accept="image/*" onchange="previewPhoto(event)">
+<img id="photoPreview" class="preview hidden" alt="Selected memory photograph">
+<label>What made you smile?</label>
+<textarea id="memory" placeholder="A little moment we'd love to remember..."></textarea>
+<label>Connect to this week's adventure (optional)</label>
+<select id="memoryWeek">${weeks.map((w,i)=>`<option value="${i}" ${i===week?'selected':''}>Week ${i+1}: ${w[0]}</option>`).join("")}</select>
+<label>What did Ella enjoy? (optional)</label>
+<select id="interest">
+<option value="exploring">Exploring and discovering</option>
+<option value="stories">Stories and conversation</option>
+<option value="caring">Caring and helping</option>
+<option value="creating">Creating and imagining</option>
+<option value="playing">Playing together</option>
+</select>
+<button class="full" onclick="saveMoment()">Save a Little Moment</button>
+<p class="notice">Demo only. Images stay in this browser session and are not uploaded to a server. Do not use real children's photos for concept testing.</p>
+</div>
+<h2>Our saved moments</h2><div id="moments"></div>
+<div class="card yellow"><h3>What shall we discover next?</h3>
+<p id="suggestion">Follow Ella's interests with another little adventure, a story or some imaginative play.</p>
+<p class="eyfs">Gentle inspiration, never an assessment.</p></div>`;
+drawMoments();
+}
+let currentPhoto=null;
+function previewPhoto(e){
+let f=e.target.files[0];
+if(!f)return;
+if(!f.type.startsWith("image/"))return;
+let reader=new FileReader();
+reader.onload=()=>{currentPhoto=reader.result;
+let img=document.getElementById("photoPreview");
+img.src=currentPhoto;img.classList.remove("hidden")};
+reader.readAsDataURL(f);
+}
+const ideas={
+exploring:"Try a little nature treasure hunt and talk about what you notice.",
+stories:"Choose a favourite picture book and invent a new ending together.",
+caring:"Create a pretend animal hospital and explore how to care for each patient.",
+creating:"Build a new imaginary world using blocks, boxes and household objects.",
+playing:"Invent a cooperative game where everyone has a special role."
+};
+function saveMoment(){
+let note=document.getElementById("memory").value.trim();
+let interest=document.getElementById("interest").value;
+let selectedWeek=Number(document.getElementById("memoryWeek").value);
+if(!note&&!currentPhoto){alert("Add a little memory or choose a sample photo.");return}
+saved.unshift({note,photo:currentPhoto,interest,week:selectedWeek});
+currentPhoto=null;
+drawMoments();
+document.getElementById("memory").value="";
+document.getElementById("photo").value="";
+document.getElementById("photoPreview").classList.add("hidden");
+document.getElementById("suggestion").textContent=ideas[interest];
+}
+function drawMoments(){
+let target=document.getElementById("moments");
+if(!target)return;
+target.innerHTML=saved.length?"":"<p class='muted'>Your little moments will appear here.</p>";
+saved.forEach((m,i)=>{
+let card=document.createElement("div");card.className="card pink";
+let heading=document.createElement("h3");heading.textContent="A Little Moment · Week "+(m.week+1);card.appendChild(heading);
+if(m.photo){let img=document.createElement("img");img.src=m.photo;img.className="preview";img.alt="Saved memory";card.appendChild(img)}
+let p=document.createElement("p");p.textContent=m.note;card.appendChild(p);
+let b=document.createElement("button");b.className="secondary";b.textContent="Remove memory";
+b.onclick=()=>{saved.splice(i,1);drawMoments()};card.appendChild(b);
+target.appendChild(card);
+});
+}
+render();
+</script>
+</body>
+</html>
